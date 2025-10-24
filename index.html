@@ -4,68 +4,51 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Heaven's Radio</title>
-
   <style>
-    html,body { height:100%; margin:0; background:#120a3b; }
-    #hr-root { min-height:560px; display:grid; place-items:center; padding:24px;
-      color:#e8f0ff; text-align:center; font:600 18px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial }
+    html,body {height:100%;margin:0;background:#120a3b}
+    #hr-root{min-height:560px;display:grid;place-items:center;padding:24px;
+      color:#e8f0ff;text-align:center;font:600 18px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
     .note{opacity:.85;font-weight:500;font-size:14px;margin-top:8px}
     code{font:600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   </style>
 
-  <script>
-    // ---- CORRECT PATHS (jsDelivr first, raw GitHub fallback) ----
-    const VER = 'v=3'; // cache-buster
-    const CSS_JSDELIVR = `https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.css?${VER}`;
-    const CSS_RAW      = `https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.css?${VER}`;
-    const JS_JSDELIVR  = `https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.js?${VER}`;
-    const JS_RAW       = `https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.js?${VER}`;
-    const POOLS_URL    = `https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt?${VER}`;
-
-    // HR_CONFIG must be defined before the player loads
-    window.HR_CONFIG = { poolsUrl: POOLS_URL, introEvery: 6, podEvery: 12, skipsPerHour: 3 };
-
-    // load CSS with fallback
-    async function injectCSS(){
-      try{
-        const r = await fetch(CSS_JSDELIVR, {mode:'cors'});
-        if(!r.ok) throw 0;
-        const l = document.createElement('link'); l.rel='stylesheet'; l.href=CSS_JSDELIVR; document.head.appendChild(l);
-      }catch{
-        const l = document.createElement('link'); l.rel='stylesheet'; l.href=CSS_RAW; document.head.appendChild(l);
-      }
-    }
-    injectCSS();
-  </script>
+  <!-- CSS from raw GitHub (not jsDelivr) -->
+  <link rel="stylesheet"
+        href="https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.css?v=now">
 </head>
 <body>
   <div id="hr-root">
     Loading Heaven’s Radio…
-    <div class="note">If this doesn’t change in a few seconds, a diagnostic will appear.</div>
+    <div class="note">If this doesn’t change in a few seconds, we’ll print a hint here.</div>
   </div>
 
   <script>
-    // load JS with fallback
-    function injectJS(){
-      const s = document.createElement('script');
-      s.defer = true; s.src = JS_JSDELIVR;
-      s.onerror = () => { const f = document.createElement('script'); f.defer = true; f.src = JS_RAW; document.body.appendChild(f); };
-      document.body.appendChild(s);
-    }
-    injectJS();
+    // MUST be defined before loading player.js
+    window.HR_CONFIG = {
+      poolsUrl: "https://raw.githubusercontent.com/akffa-web/heavens-radio-pools/main/Song%20List.txt?v=now",
+      introEvery: 6, podEvery: 12, skipsPerHour: 3
+    };
 
-    // simple diagnosis if nothing mounts
+    // Load JS from raw GitHub only (avoid old cached CDN)
+    const s = document.createElement('script');
+    s.defer = true;
+    s.src = "https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.js?v=now";
+    s.onerror = function(){
+      const root = document.getElementById('hr-root');
+      root.innerHTML =
+        "<div><div style='font-size:20px;font-weight:800;color:#ff9a9a'>Couldn’t load the player script (raw GitHub).</div>"+
+        "<div class='note'>Open this URL in a new tab to confirm it loads:<br><code>"+ s.src +"</code></div></div>";
+    };
+    document.body.appendChild(s);
+
+    // After 6s, if nothing mounted, show a gentle hint
     setTimeout(() => {
       const root = document.getElementById('hr-root');
-      if(!root || !root.textContent.includes('Loading')) return;
-      root.innerHTML =
-        `<div style="max-width:900px">
-           <div style="font-size:20px;font-weight:800;color:#ffd27a;margin-bottom:6px">Player didn’t mount yet.</div>
-           <div class="note">Open these in new tabs (should load):</div>
-           <div class="note"><code>${CSS_JSDELIVR}</code></div>
-           <div class="note"><code>${JS_JSDELIVR}</code></div>
-           <div class="note"><code>${POOLS_URL}</code></div>
-         </div>`;
+      if (root && root.textContent.includes("Loading Heaven’s Radio")) {
+        root.innerHTML =
+          "<div><div style='font-size:20px;font-weight:800;color:#ffd27a'>Still waiting…</div>"+
+          "<div class='note'>Please hard-refresh the page (Ctrl/Cmd + Shift + R). GitHub Pages may be serving an older cached index.html.</div></div>";
+      }
     }, 6000);
   </script>
 </body>
