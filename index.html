@@ -5,48 +5,104 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Heaven's Radio</title>
 
-  <!-- Heaven's Radio v1.5.3 (hard cache-bust via filename) -->
-  <link rel="stylesheet"
-        href="https://akffa-web.github.io/akffa-web-heavens-radio/player.css">
-  <style>
-  /* Disable text selection and long-press inside the player */
-  .hr-player, .hr-player * {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-  }
-</style>
-
+  <!-- Keep your exact filenames/paths here -->
+  <link rel="stylesheet" href="https://akffa-web.github.io/akffa-web-heavens-radio/player.css">
 </head>
 <body>
-  <div id="hr-root"></div>
+  <!-- Player markup lives in HTML, not JS -->
+  <div class="hr-wrap">
+    <div class="hr-player" id="hr-player">
+
+      <!-- Title box -->
+      <div class="hr-titleCard" id="hr-titleCard">
+        <div class="hr-onair" id="hr-onAir">
+          <span class="hr-onair-dot"></span><span>ON AIR</span>
+        </div>
+
+        <button class="hr-likeCorner hr-unliked" id="hr-likeBtn" title="Like">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 17.3l-5.4 3.3 1.6-6.1-4.7-3.9 6.2-.5L12 4l2.3 6.1 6.2.5-4.7 3.9 1.6 6.1z" stroke-width="2"/>
+          </svg>
+        </button>
+
+        <div class="hr-artist" id="hr-artistText">HEAVEN'S RADIO</div>
+        <div class="hr-track"  id="hr-trackText">Ready when you are</div>
+        <div class="hr-stamp"  id="hr-stampText">0:00 • 0:00</div>
+      </div>
+
+      <!-- 10px timeline bar -->
+      <div class="hr-timeline" id="hr-timeline" aria-label="Seek">
+        <div class="hr-tl-track"></div>
+        <div class="hr-tl-fill" id="hr-tl-fill"></div>
+        <div class="hr-tl-thumb" id="hr-tl-thumb"></div>
+      </div>
+
+      <!-- Controls -->
+      <div class="hr-cluster">
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="hr-sq" id="hr-stopBtn" title="Stop">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="6" y="6" width="12" height="12" rx="2" ry="2"/>
+            </svg>
+          </button>
+        </div>
+
+        <button class="hr-big" id="hr-playBtn" aria-label="Play">
+          <div class="hr-ring" aria-hidden="true">
+            <svg id="hr-ringSvg" viewBox="0 0 120 120">
+              <defs>
+                <!-- Swirling multicolor gradient for edge ring -->
+                <linearGradient id="hr-swirlGrad" x1="0" y1="0" x2="120" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="#6cf"/>
+                  <stop offset="20%"  stop-color="#7fffd4"/>
+                  <stop offset="40%"  stop-color="#f9f871"/>
+                  <stop offset="60%"  stop-color="#ffa3e0"/>
+                  <stop offset="80%"  stop-color="#9ad0ff"/>
+                  <stop offset="100%" stop-color="#6cf"/>
+                  <animateTransform attributeName="gradientTransform" type="rotate"
+                                    from="0 60 60" to="360 60 60" dur="6s" repeatCount="indefinite"/>
+                </linearGradient>
+              </defs>
+              <circle class="hr-glassEdge" cx="60" cy="60" r="52"></circle>
+              <circle class="hr-remain"    cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="0"></circle>
+              <circle class="hr-elapsed"   cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="327"></circle>
+            </svg>
+            <div class="hr-marker" id="hr-ringMarker"></div>
+          </div>
+
+          <div class="hr-icon" id="hr-playIcon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </button>
+
+        <div style="display:flex; justify-content:flex-start;">
+          <button class="hr-sq" id="hr-nextBtn" title="Next">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 6l7 6-7 6V6zm9 0h2v12h-2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="hr-notice" id="hr-skipNotice">YOU MAY ONLY SKIP THREE SONGS PER HOUR. PLEASE WAIT.</div>
+
+      <audio id="hr-audio"></audio>
+    </div>
+  </div>
 
   <script>
-    // Config (space encoded in filename)
+    /* Optional: config in-page (or keep as-is if you set it elsewhere) */
     window.HR_CONFIG = {
       poolsUrl: "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt",
       introEvery: 6,
       podEvery: 12,
       skipsPerHour: 3
     };
-    // Visible version ping
-      </script>
+  </script>
 
+  <!-- Keep your exact filename here -->
   <script src="https://akffa-web.github.io/akffa-web-heavens-radio/player.js" defer></script>
-
-  <script>
-  // Disable right-click inside the iframe
-  document.addEventListener('contextmenu', function (e) {
-    const tag = (e.target.closest('input, textarea, [contenteditable="true"]') || {}).tagName;
-    if (!tag) e.preventDefault();
-  });
-
-  // Prevent long-press popup on touch devices
-  let touchTimer;
-  window.addEventListener('touchstart', () => { touchTimer = setTimeout(()=>{}, 600); }, {passive:true});
-  window.addEventListener('touchend',   () => { clearTimeout(touchTimer); }, {passive:true});
-</script>
-
 </body>
 </html>
