@@ -8,6 +8,16 @@
   <!-- Heaven's Radio v1.5.3 (hard cache-bust via filename) -->
   <link rel="stylesheet"
         href="https://akffa-web.github.io/akffa-web-heavens-radio/player-1.5.3.css">
+  <style>
+  /* Disable text selection and long-press inside the player */
+  .hr-player, .hr-player * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+</style>
+
 </head>
 <body>
   <div id="hr-root"></div>
@@ -25,5 +35,19 @@
   </script>
 
   <script src="https://akffa-web.github.io/akffa-web-heavens-radio/player-1.5.3.js" defer></script>
+
+  <script>
+  // Disable right-click inside the iframe
+  document.addEventListener('contextmenu', function (e) {
+    const tag = (e.target.closest('input, textarea, [contenteditable="true"]') || {}).tagName;
+    if (!tag) e.preventDefault();
+  });
+
+  // Prevent long-press popup on touch devices
+  let touchTimer;
+  window.addEventListener('touchstart', () => { touchTimer = setTimeout(()=>{}, 600); }, {passive:true});
+  window.addEventListener('touchend',   () => { clearTimeout(touchTimer); }, {passive:true});
+</script>
+
 </body>
 </html>
