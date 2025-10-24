@@ -5,31 +5,71 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Heaven's Radio</title>
 
-  <!-- Make the page blend with your Wix background -->
+  <!-- TEMP: give the page a dark backdrop so the loader is visible -->
   <style>
-    html,body{height:100%;margin:0;background:transparent;}
-    /* Optional: center the player while the CSS loads */
-    #hr-root{min-height:520px;display:grid;place-items:center;color:#fff}
+    html,body { height:100%; margin:0; background:#120a3b; }
+    #hr-root {
+      min-height:520px; display:grid; place-items:center;
+      color:#e8f0ff; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      text-align:center; padding:24px;
+    }
+    .hr-note { opacity:.85; font-size:15px; margin-top:10px }
+    .hr-badge { display:inline-block; margin-top:14px; padding:6px 10px; border-radius:999px; background:#1e275a; color:#bcd3ff; font-size:12px }
   </style>
 
-  <!-- Player CSS (versioned via GitHub tag) -->
+  <!-- Player CSS (update the version when you release a new tag) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.css">
 </head>
 <body>
-  <!-- Mount point -->
-  <div id="hr-root">Loading Heaven’s Radio…</div>
+  <div id="hr-root">
+    <div>
+      <div style="font-size:18px;font-weight:600">Loading Heaven’s Radio…</div>
+      <div class="hr-note">If this stays here for more than a few seconds, files didn’t load.</div>
+      <div class="hr-badge">GitHub Pages preview</div>
+    </div>
+  </div>
 
-  <!-- Player config -->
   <script>
+    // 👉 EDIT THESE if needed
+    const POOLS_URL = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt";
+    const PLAYER_CSS = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.css";
+    const PLAYER_JS  = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.js";
+
+    // Mount config before loading script
     window.HR_CONFIG = {
-      poolsUrl: "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt",
+      poolsUrl: POOLS_URL,
       introEvery: 6,
       podEvery: 12,
       skipsPerHour: 3
     };
-  </script>
 
-  <!-- Player logic -->
-  <script defer src="https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.js"></script>
+    // Load player script programmatically and report if it fails
+    (function(){
+      const s = document.createElement('script');
+      s.src = PLAYER_JS;
+      s.defer = true;
+      s.onerror = function(){
+        document.getElementById('hr-root').innerHTML =
+          "<div><div style='font-size:18px;font-weight:700;color:#ff9a9a'>Couldn’t load the player script.</div>" +
+          "<div class='hr-note'>Open this URL in a new tab to check it exists:<br><code style='font-size:13px'>" +
+          PLAYER_JS + "</code></div></div>";
+      };
+      document.body.appendChild(s);
+
+      // Safety timeout (shows helpful message if nothing mounts)
+      setTimeout(function(){
+        const root = document.getElementById('hr-root');
+        // If the script mounted the player, #hr-root will be replaced—skip
+        if (root && root.innerText.includes("Loading Heaven’s Radio")) {
+          root.innerHTML =
+            "<div><div style='font-size:18px;font-weight:700;color:#ffd27a'>Still waiting…</div>" +
+            "<div class='hr-note'>Check that these URLs load in your browser:</div>" +
+            "<div class='hr-note'><code style='font-size:13px'>" + PLAYER_CSS + "</code></div>" +
+            "<div class='hr-note'><code style='font-size:13px'>" + PLAYER_JS  + "</code></div>" +
+            "<div class='hr-note'><code style='font-size:13px'>" + POOLS_URL  + "</code></div></div>";
+        }
+      }, 6000);
+    })();
+  </script>
 </body>
 </html>
