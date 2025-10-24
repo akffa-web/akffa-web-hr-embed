@@ -1,56 +1,395 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Heaven's Radio</title>
+  <title>AKFFA Music Player</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
-    html,body {height:100%;margin:0;background:#120a3b}
-    #hr-root{min-height:560px;display:grid;place-items:center;padding:24px;
-      color:#e8f0ff;text-align:center;font:600 18px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .note{opacity:.85;font-weight:500;font-size:14px;margin-top:8px}
-    code{font:600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
-  </style>
+    :root{
+      --bg:#0b0d12;
+      --text:#e9eef7;
+      --muted:#c9d1e1;
+      --timeline-height:4px; /* half thickness */
+      --timeline-radius:999px;
+      --glass-bg:rgba(255,255,255,0.08);
+      --glass-stroke:rgba(255,255,255,0.25);
+      --peach:#ffb197; /* subtle indicator */
+      --card:#121622;
+      --card-border:rgba(255,255,255,0.08);
+      --gap:1.25rem; /* larger gap between title and play */
+    }
 
-  <!-- CSS via jsDelivr (CORRECT repo + branch) -->
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.css?v=4">
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      background: radial-gradient(1200px 600px at 70% 10%, #12182b 0%, #0b0d12 55%) fixed;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+
+    .player{
+      width:min(920px, 92vw);
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:22px;
+      padding:18px 18px 16px;
+      box-shadow:0 20px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    /* Header row: title + controls */
+    .player-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--gap);
+      margin-bottom:14px;
+    }
+
+    /* Title box: fixed-feel yet responsive width */
+    .titlebox{
+      font-family:'Montserrat',sans-serif;
+      display:flex;
+      align-items:baseline;
+      gap:.5rem;
+      width:clamp(260px, 40vw, 580px); /* uniformed width that stays, but responsive */
+      min-height:2.6rem;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+    }
+    .titlebox .artist{
+      font-size:16px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      font-weight:300; /* thin */
+      opacity:.9;
+    }
+    .titlebox .sep{
+      opacity:.55;
+      font-weight:300;
+    }
+    .titlebox .song{
+      font-size:26px;
+      font-weight:300; /* thin, not bold */
+      line-height:1.1;
+    }
+
+    /* Control buttons cluster */
+    .controls{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      margin-left:auto; /* push away from title for a larger gap */
+    }
+    .btn{
+      display:inline-grid;
+      place-items:center;
+      border:1px solid transparent;
+      border-radius:14px;
+      padding:.6rem .8rem;
+      color:#fff;
+      background:transparent;
+      cursor:pointer;
+      transition:all .2s ease;
+      user-select:none;
+    }
+    .btn svg{width:18px;height:18px;display:block}
+
+    /* Play: transparent glass with white icon */
+    .btn--play{
+      background:var(--glass-bg);
+      border-color:var(--glass-stroke);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.25);
+    }
+    .btn--play:hover{ background:rgba(255,255,255,0.12); transform:translateY(-1px); }
+    .btn--play svg{ width:22px;height:22px; }
+
+    /* Stop/Skip: less padding, more rounded */
+    .btn--stop,.btn--prev,.btn--next{
+      padding:.4rem .56rem;              /* reduced inner padding */
+      border-radius:9999px;              /* even more rounded */
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.18);
+    }
+    .btn--stop:hover,.btn--prev:hover,.btn--next:hover{
+      background:rgba(255,255,255,0.10);
+    }
+
+    /* Timeline */
+    .progress{
+      position:relative;
+      width:100%;
+      height:var(--timeline-height);
+      margin-top:6px;
+    }
+    .progress__track{
+      position:absolute; inset:0;
+      background:rgba(255,255,255,0.15);
+      border-radius:var(--timeline-radius);
+      overflow:hidden;
+    }
+    /* multicolor swirling fill inside thin bar */
+    .progress__fill{
+      position:absolute; inset:0;
+      width:0%;
+      background:linear-gradient(90deg,
+        #6cf 0%,
+        #7fffd4 20%,
+        #f9f871 40%,
+        #ffa3e0 60%,
+        #9ad0ff 80%,
+        #6cf 100%
+      );
+      background-size:300% 100%;
+      animation:progressSwirl 6s linear infinite;
+      border-radius:var(--timeline-radius);
+      will-change:width, background-position;
+    }
+    @keyframes progressSwirl{
+      0%{background-position:0% 0}
+      100%{background-position:300% 0}
+    }
+
+    /* subtle peach light indicator */
+    .progress__thumb{
+      position:absolute;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:10px;height:10px;border-radius:999px;
+      background:var(--peach);
+      opacity:.35;
+      box-shadow:
+        0 0 0 2px rgba(255,177,151,0.18),
+        0 4px 12px rgba(255,177,151,0.20);
+      pointer-events:none;
+      transition:left .05s linear;
+    }
+
+    /* click/hover interaction */
+    .progress[data-interactive="true"]{ cursor:pointer; }
+    .timecodes{
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:10px; font-size:12px; color:var(--muted); opacity:.85;
+      font-variant-numeric:tabular-nums;
+    }
+
+    /* small helper row */
+    .row{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+
+    /* responsive niceties */
+    @media (max-width:560px){
+      .titlebox{ width:clamp(200px, 50vw, 360px); }
+      .titlebox .song{ font-size:22px; }
+      .controls{ gap:.35rem; }
+    }
+  </style>
 </head>
 <body>
-  <div id="hr-root">
-    Loading Heaven’s Radio…
-    <div class="note">If this doesn’t change in a few seconds, a small hint will appear.</div>
-  </div>
+
+  <main class="player" role="region" aria-label="Music Player">
+    <header class="player-header">
+      <div class="titlebox" id="titleBox" title="Artist — Song">
+        <span class="artist" id="artistTxt">ARTIST</span>
+        <span class="sep">—</span>
+        <span class="song" id="songTxt">Song Title</span>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn--prev" id="prevBtn" aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 6v12l-7-6 7-6zM7 6h2v12H7z"/></svg>
+        </button>
+
+        <button class="btn btn--play" id="playBtn" aria-label="Play">
+          <!-- Play Icon (toggled in JS) -->
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+
+        <button class="btn btn--stop" id="stopBtn" aria-label="Stop">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>
+        </button>
+
+        <button class="btn btn--next" id="nextBtn" aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 6l7 6-7 6V6zm8 0h2v12h-2z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="row">
+      <div class="progress" id="progress" data-interactive="true" role="slider"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Seek">
+        <div class="progress__track"></div>
+        <div class="progress__fill" id="progressFill"></div>
+        <div class="progress__thumb" id="progressThumb" style="left:0%"></div>
+      </div>
+    </div>
+
+    <div class="timecodes">
+      <span id="timeCurrent">0:00</span>
+      <span id="timeTotal">0:00</span>
+    </div>
+
+    <!-- Hidden audio element -->
+    <audio id="audio" preload="metadata"></audio>
+  </main>
 
   <script>
-    // MUST be defined before loading player.js
-    window.HR_CONFIG = {
-      poolsUrl: "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt?v=4",
-      introEvery: 6, podEvery: 12, skipsPerHour: 3
-    };
+    // ====== Simple Playlist (replace src with your files) ======
+    const playlist = [
+      { artist: 'AKFFA', title: 'Glass Chapel', src: 'media/glass-chapel.mp3' },
+      { artist: 'AKFFA', title: 'Citizen of Heaven', src: 'media/citizen-of-heaven.mp3' },
+      { artist: 'AKFFA', title: 'Broken Crown', src: 'media/broken-crown.mp3' },
+    ];
 
-    // Load JS via jsDelivr (CORRECT repo + branch)
-    const s = document.createElement('script');
-    s.defer = true;
-    s.src = "https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.js?v=4";
-    s.onerror = function(){
-      const root = document.getElementById('hr-root');
-      root.innerHTML =
-        "<div><div style='font-size:20px;font-weight:800;color:#ff9a9a'>Couldn’t load the player script.</div>"+
-        "<div class='note'>Open this URL in a new tab to confirm it loads:<br><code>"+ s.src +"</code></div></div>";
-    };
-    document.body.appendChild(s);
+    // ====== Elements ======
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
-    // After 6s, if nothing mounted, show a gentle hint
-    setTimeout(() => {
-      const root = document.getElementById('hr-root');
-      if (root && root.textContent.includes("Loading Heaven’s Radio")) {
-        root.innerHTML =
-          "<div><div style='font-size:20px;font-weight:800;color:#ffd27a'>Still waiting…</div>"+
-          "<div class='note'>Hard-refresh (Ctrl/Cmd+Shift+R). If you still see this, View-Source and check the script URL matches jsDelivr with <code>akffa-web/akffa-web-heavens-radio@main</code>.</div></div>";
+    const artistTxt = document.getElementById('artistTxt');
+    const songTxt = document.getElementById('songTxt');
+    const progress = document.getElementById('progress');
+    const progressFill = document.getElementById('progressFill');
+    const progressThumb = document.getElementById('progressThumb');
+    const timeCurrent = document.getElementById('timeCurrent');
+    const timeTotal = document.getElementById('timeTotal');
+
+    let index = 0;
+    let isPlaying = false;
+
+    // ====== Helpers ======
+    function fmtTime(sec){
+      if (!isFinite(sec)) return '0:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function setPlayIcon(playing){
+      playBtn.innerHTML = playing
+        // Pause icon
+        ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>'
+        // Play icon
+        : '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+      playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    }
+
+    function updateTitle(meta){
+      artistTxt.textContent = (meta.artist || '').toUpperCase();
+      songTxt.textContent = meta.title || '';
+      document.title = `${meta.artist ? meta.artist.toUpperCase() : ''} — ${meta.title || ''}`;
+    }
+
+    function loadTrack(i){
+      index = (i + playlist.length) % playlist.length;
+      const track = playlist[index];
+      updateTitle(track);
+      audio.src = track.src;
+      audio.load();
+      setPlayIcon(false);
+      isPlaying = false;
+      updateProgress(0, audio.duration || 0);
+      timeCurrent.textContent = '0:00';
+      timeTotal.textContent = '0:00';
+    }
+
+    function playPause(){
+      if (!audio.src) loadTrack(index);
+      if (audio.paused) {
+        audio.play().then(()=> {
+          isPlaying = true;
+          setPlayIcon(true);
+        }).catch(console.error);
+      } else {
+        audio.pause();
+        isPlaying = false;
+        setPlayIcon(false);
       }
-    }, 6000);
+    }
+
+    function stopPlayback(){
+      audio.pause();
+      audio.currentTime = 0;
+      isPlaying = false;
+      setPlayIcon(false);
+    }
+
+    function skip(delta){
+      loadTrack(index + delta);
+      // auto play next track
+      audio.play().then(()=> {
+        isPlaying = true;
+        setPlayIcon(true);
+      }).catch(console.error);
+    }
+
+    // Progress UI
+    function updateProgress(currentTime, duration){
+      const pct = duration ? (currentTime / duration) * 100 : 0;
+      progressFill.style.width = `${pct}%`;
+      progressThumb.style.left = `${pct}%`;
+      progress.setAttribute('aria-valuenow', Math.round(pct));
+    }
+
+    function seekFromEvent(e){
+      const rect = progress.getBoundingClientRect();
+      const x = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
+      const pct = x / rect.width;
+      if (isFinite(audio.duration)) {
+        audio.currentTime = audio.duration * pct;
+      }
+    }
+
+    // ====== Events ======
+    playBtn.addEventListener('click', playPause);
+    stopBtn.addEventListener('click', stopPlayback);
+    prevBtn.addEventListener('click', () => skip(-1));
+    nextBtn.addEventListener('click', () => skip(1));
+
+    audio.addEventListener('loadedmetadata', () => {
+      timeTotal.textContent = fmtTime(audio.duration);
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      updateProgress(audio.currentTime, audio.duration);
+      timeCurrent.textContent = fmtTime(audio.currentTime);
+      timeTotal.textContent = fmtTime(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      skip(1);
+    });
+
+    // Seek interactions
+    let isDragging = false;
+    progress.addEventListener('mousedown', (e) => { isDragging = true; seekFromEvent(e); });
+    window.addEventListener('mousemove', (e) => { if (isDragging) seekFromEvent(e); });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    progress.addEventListener('click', seekFromEvent);
+
+    // Keyboard a11y
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') { e.preventDefault(); playPause(); }
+      if (e.code === 'ArrowRight') { audio.currentTime = Math.min((audio.currentTime + 5), audio.duration || 0); }
+      if (e.code === 'ArrowLeft') { audio.currentTime = Math.max((audio.currentTime - 5), 0); }
+    });
+
+    // Init
+    loadTrack(0);
   </script>
 </body>
 </html>
