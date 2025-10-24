@@ -4,72 +4,60 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Heaven's Radio</title>
-
-  <!-- TEMP: give the page a dark backdrop so the loader is visible -->
   <style>
-    html,body { height:100%; margin:0; background:#120a3b; }
-    #hr-root {
-      min-height:520px; display:grid; place-items:center;
-      color:#e8f0ff; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      text-align:center; padding:24px;
-    }
-    .hr-note { opacity:.85; font-size:15px; margin-top:10px }
-    .hr-badge { display:inline-block; margin-top:14px; padding:6px 10px; border-radius:999px; background:#1e275a; color:#bcd3ff; font-size:12px }
+    html,body {height:100%;margin:0;background:#120a3b}
+    #hr-root{min-height:520px;display:grid;place-items:center;color:#e8f0ff;text-align:center;padding:24px;font:600 18px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .note{opacity:.85;font-weight:500;font-size:14px;margin-top:8px}
   </style>
+  <script>
+    // URLs (jsDelivr primary, raw GitHub fallback)
+    const CSS_JSDELIVR = "https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.css";
+    const CSS_RAW      = "https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.css";
+    const JS_JSDELIVR  = "https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.js";
+    const JS_RAW       = "https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.js";
+    const POOLS_URL    = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt";
 
-  <!-- Player CSS (update the version when you release a new tag) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.css">
+    window.HR_CONFIG = { poolsUrl: POOLS_URL, introEvery: 6, podEvery: 12, skipsPerHour: 3 };
+
+    // inject CSS with fallback
+    async function mountCSS() {
+      try {
+        const r = await fetch(CSS_JSDELIVR, {mode:"cors"});
+        if (!r.ok) throw 0;
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = CSS_JSDELIVR;
+        document.head.appendChild(link);
+      } catch(e) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = CSS_RAW;
+        document.head.appendChild(link);
+      }
+    }
+
+    // inject JS with fallback
+    function mountJS() {
+      const s = document.createElement("script");
+      s.src = JS_JSDELIVR;
+      s.defer = true;
+      s.onerror = () => {
+        const f = document.createElement("script");
+        f.src = JS_RAW;
+        f.defer = true;
+        document.body.appendChild(f);
+      };
+      document.body.appendChild(s);
+    }
+
+    mountCSS();
+  </script>
 </head>
 <body>
   <div id="hr-root">
-    <div>
-      <div style="font-size:18px;font-weight:600">Loading Heaven’s Radio…</div>
-      <div class="hr-note">If this stays here for more than a few seconds, files didn’t load.</div>
-      <div class="hr-badge">GitHub Pages preview</div>
-    </div>
+    Loading Heaven’s Radio…
+    <div class="note">If this message stays, assets failed to load. The page will retry with fallbacks automatically.</div>
   </div>
-
-  <script>
-    // 👉 EDIT THESE if needed
-    const POOLS_URL = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt";
-    const PLAYER_CSS = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.css";
-    const PLAYER_JS  = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.js";
-
-    // Mount config before loading script
-    window.HR_CONFIG = {
-      poolsUrl: POOLS_URL,
-      introEvery: 6,
-      podEvery: 12,
-      skipsPerHour: 3
-    };
-
-    // Load player script programmatically and report if it fails
-    (function(){
-      const s = document.createElement('script');
-      s.src = PLAYER_JS;
-      s.defer = true;
-      s.onerror = function(){
-        document.getElementById('hr-root').innerHTML =
-          "<div><div style='font-size:18px;font-weight:700;color:#ff9a9a'>Couldn’t load the player script.</div>" +
-          "<div class='hr-note'>Open this URL in a new tab to check it exists:<br><code style='font-size:13px'>" +
-          PLAYER_JS + "</code></div></div>";
-      };
-      document.body.appendChild(s);
-
-      // Safety timeout (shows helpful message if nothing mounts)
-      setTimeout(function(){
-        const root = document.getElementById('hr-root');
-        // If the script mounted the player, #hr-root will be replaced—skip
-        if (root && root.innerText.includes("Loading Heaven’s Radio")) {
-          root.innerHTML =
-            "<div><div style='font-size:18px;font-weight:700;color:#ffd27a'>Still waiting…</div>" +
-            "<div class='hr-note'>Check that these URLs load in your browser:</div>" +
-            "<div class='hr-note'><code style='font-size:13px'>" + PLAYER_CSS + "</code></div>" +
-            "<div class='hr-note'><code style='font-size:13px'>" + PLAYER_JS  + "</code></div>" +
-            "<div class='hr-note'><code style='font-size:13px'>" + POOLS_URL  + "</code></div></div>";
-        }
-      }, 6000);
-    })();
-  </script>
+  <script>mountJS();</script>
 </body>
 </html>
