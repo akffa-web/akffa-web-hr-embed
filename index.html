@@ -5,23 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Heaven's Radio</title>
 
-  <!-- Heaven's Radio v1.5.1 -->
+  <!-- Heaven's Radio v1.5.3 (hard cache-bust via filename) -->
   <link rel="stylesheet"
-        href="https://akffa-web.github.io/akffa-web-heavens-radio/player.css?v=1.5.1">
+        href="https://akffa-web.github.io/akffa-web-heavens-radio/player-1.5.3.css">
 </head>
 <body>
   <div id="hr-root"></div>
 
   <script>
-    // Configuration for Heaven's Radio
+    // Config (space encoded in filename)
     window.HR_CONFIG = {
       poolsUrl: "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt",
       introEvery: 6,
       podEvery: 12,
       skipsPerHour: 3
     };
+    // Visible version ping
+    console.log("Heaven's Radio version: 1.5.3");
   </script>
 
-  <script src="https://akffa-web.github.io/akffa-web-heavens-radio/player.js?v=1.5.1" defer></script>
+  <script src="https://akffa-web.github.io/akffa-web-heavens-radio/player-1.5.3.js" defer></script>
 </body>
 </html>
