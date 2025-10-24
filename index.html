@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Heaven's Radio</title>
+
+  <!-- Make the page blend with your Wix background -->
+  <style>
+    html,body{height:100%;margin:0;background:transparent;}
+    /* Optional: center the player while the CSS loads */
+    #hr-root{min-height:520px;display:grid;place-items:center;color:#fff}
+  </style>
+
+  <!-- Player CSS (versioned via GitHub tag) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.css">
+</head>
+<body>
+  <!-- Mount point -->
+  <div id="hr-root">Loading Heaven’s Radio…</div>
+
+  <!-- Player config -->
+  <script>
+    window.HR_CONFIG = {
+      poolsUrl: "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt",
+      introEvery: 6,
+      podEvery: 12,
+      skipsPerHour: 3
+    };
+  </script>
+
+  <!-- Player logic -->
+  <script defer src="https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio@v1.0.0/player.js"></script>
+</body>
+</html>
