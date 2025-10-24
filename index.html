@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Heaven's Radio</title>
+
   <style>
     html,body {height:100%;margin:0;background:#120a3b}
     #hr-root{min-height:560px;display:grid;place-items:center;padding:24px;
@@ -12,31 +13,31 @@
     code{font:600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   </style>
 
-  <!-- CSS from raw GitHub (not jsDelivr) -->
+  <!-- CSS via jsDelivr (CORRECT repo + branch) -->
   <link rel="stylesheet"
-        href="https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.css?v=now">
+        href="https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.css?v=4">
 </head>
 <body>
   <div id="hr-root">
     Loading Heaven’s Radio…
-    <div class="note">If this doesn’t change in a few seconds, we’ll print a hint here.</div>
+    <div class="note">If this doesn’t change in a few seconds, a small hint will appear.</div>
   </div>
 
   <script>
     // MUST be defined before loading player.js
     window.HR_CONFIG = {
-      poolsUrl: "https://raw.githubusercontent.com/akffa-web/heavens-radio-pools/main/Song%20List.txt?v=now",
+      poolsUrl: "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt?v=4",
       introEvery: 6, podEvery: 12, skipsPerHour: 3
     };
 
-    // Load JS from raw GitHub only (avoid old cached CDN)
+    // Load JS via jsDelivr (CORRECT repo + branch)
     const s = document.createElement('script');
     s.defer = true;
-    s.src = "https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.js?v=now";
+    s.src = "https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.js?v=4";
     s.onerror = function(){
       const root = document.getElementById('hr-root');
       root.innerHTML =
-        "<div><div style='font-size:20px;font-weight:800;color:#ff9a9a'>Couldn’t load the player script (raw GitHub).</div>"+
+        "<div><div style='font-size:20px;font-weight:800;color:#ff9a9a'>Couldn’t load the player script.</div>"+
         "<div class='note'>Open this URL in a new tab to confirm it loads:<br><code>"+ s.src +"</code></div></div>";
     };
     document.body.appendChild(s);
@@ -47,7 +48,7 @@
       if (root && root.textContent.includes("Loading Heaven’s Radio")) {
         root.innerHTML =
           "<div><div style='font-size:20px;font-weight:800;color:#ffd27a'>Still waiting…</div>"+
-          "<div class='note'>Please hard-refresh the page (Ctrl/Cmd + Shift + R). GitHub Pages may be serving an older cached index.html.</div></div>";
+          "<div class='note'>Hard-refresh (Ctrl/Cmd+Shift+R). If you still see this, View-Source and check the script URL matches jsDelivr with <code>akffa-web/akffa-web-heavens-radio@main</code>.</div></div>";
       }
     }, 6000);
   </script>
