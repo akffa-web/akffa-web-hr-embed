@@ -7,89 +7,65 @@
 
   <style>
     html,body { height:100%; margin:0; background:#120a3b; }
-    #hr-root {
-      min-height:560px; display:grid; place-items:center; padding:24px;
-      color:#e8f0ff; text-align:center; font:600 18px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    }
-    .note{opacity:.85; font-weight:500; font-size:14px; margin-top:8px}
+    #hr-root { min-height:560px; display:grid; place-items:center; padding:24px;
+      color:#e8f0ff; text-align:center; font:600 18px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial }
+    .note{opacity:.85;font-weight:500;font-size:14px;margin-top:8px}
     code{font:600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   </style>
 
   <script>
-    // --------- CONFIG (edit as needed) ----------
-    const CSS_JSDELIVR = "https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.css?v=2";
-    const CSS_RAW      = "https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.css?v=2";
-    const JS_JSDELIVR  = "https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.js?v=2";
-    const JS_RAW       = "https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.js?v=2";
-    const POOLS_URL    = "https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt?v=2";
-    // --------------------------------------------
+    // ---- CORRECT PATHS (jsDelivr first, raw GitHub fallback) ----
+    const VER = 'v=3'; // cache-buster
+    const CSS_JSDELIVR = `https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.css?${VER}`;
+    const CSS_RAW      = `https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.css?${VER}`;
+    const JS_JSDELIVR  = `https://cdn.jsdelivr.net/gh/akffa-web/akffa-web-heavens-radio@main/player.js?${VER}`;
+    const JS_RAW       = `https://raw.githubusercontent.com/akffa-web/akffa-web-heavens-radio/main/player.js?${VER}`;
+    const POOLS_URL    = `https://cdn.jsdelivr.net/gh/akffa-web/heavens-radio-pools@main/Song%20List.txt?${VER}`;
 
-    // HR_CONFIG MUST be defined before loading the player script.
+    // HR_CONFIG must be defined before the player loads
     window.HR_CONFIG = { poolsUrl: POOLS_URL, introEvery: 6, podEvery: 12, skipsPerHour: 3 };
 
-    // capture last window error for on-page report
-    let lastError = null;
-    window.addEventListener('error', e => { lastError = e.message || String(e.error || e); });
-
-    // inject CSS with fallback
-    async function injectCSS() {
-      try {
-        const r = await fetch(CSS_JSDELIVR, {mode:"cors"});
-        if (!r.ok) throw 0;
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = CSS_JSDELIVR;
-        document.head.appendChild(link);
-      } catch {
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = CSS_RAW;
-        document.head.appendChild(link);
+    // load CSS with fallback
+    async function injectCSS(){
+      try{
+        const r = await fetch(CSS_JSDELIVR, {mode:'cors'});
+        if(!r.ok) throw 0;
+        const l = document.createElement('link'); l.rel='stylesheet'; l.href=CSS_JSDELIVR; document.head.appendChild(l);
+      }catch{
+        const l = document.createElement('link'); l.rel='stylesheet'; l.href=CSS_RAW; document.head.appendChild(l);
       }
     }
-
-    // inject JS with fallback
-    function injectJS() {
-      const s = document.createElement("script");
-      s.defer = true;
-      s.src = JS_JSDELIVR;
-      s.onerror = () => {
-        const f = document.createElement("script");
-        f.defer = true;
-        f.src = JS_RAW;
-        document.body.appendChild(f);
-      };
-      document.body.appendChild(s);
-    }
-
     injectCSS();
   </script>
 </head>
 <body>
   <div id="hr-root">
     Loading Heaven’s Radio…
-    <div class="note">If this text doesn’t change within a few seconds, a helpful diagnosis will appear below.</div>
+    <div class="note">If this doesn’t change in a few seconds, a diagnostic will appear.</div>
   </div>
 
   <script>
+    // load JS with fallback
+    function injectJS(){
+      const s = document.createElement('script');
+      s.defer = true; s.src = JS_JSDELIVR;
+      s.onerror = () => { const f = document.createElement('script'); f.defer = true; f.src = JS_RAW; document.body.appendChild(f); };
+      document.body.appendChild(s);
+    }
     injectJS();
 
-    // After 6s, if #hr-root still contains the loader, show a diagnosis
+    // simple diagnosis if nothing mounts
     setTimeout(() => {
       const root = document.getElementById('hr-root');
-      if (!root) return;                        // player may have replaced the node already
-      if (!root.textContent.includes("Loading Heaven’s Radio")) return;
-
+      if(!root || !root.textContent.includes('Loading')) return;
       root.innerHTML =
-        "<div style='max-width:920px'>" +
-        "<div style='font-size:20px;font-weight:800;color:#ffd27a;margin-bottom:6px'>Player didn’t mount yet.</div>" +
-        "<div class='note'>Check these files open in your browser (they should already work):</div>" +
-        "<div class='note'><code>"+ CSS_JSDELIVR +"</code></div>" +
-        "<div class='note'><code>"+ JS_JSDELIVR  +"</code></div>" +
-        "<div class='note'><code>"+ POOLS_URL    +"</code></div>" +
-        "<div class='note' style='margin-top:14px'>We also tried raw GitHub fallbacks. Open the browser console for details (Ctrl/Cmd+Shift+K)."+
-        (lastError ? "<br><br><b>Last error:</b> <code>"+ String(lastError).replace(/</g,"&lt;") +"</code>" : "") +
-        "</div></div>";
+        `<div style="max-width:900px">
+           <div style="font-size:20px;font-weight:800;color:#ffd27a;margin-bottom:6px">Player didn’t mount yet.</div>
+           <div class="note">Open these in new tabs (should load):</div>
+           <div class="note"><code>${CSS_JSDELIVR}</code></div>
+           <div class="note"><code>${JS_JSDELIVR}</code></div>
+           <div class="note"><code>${POOLS_URL}</code></div>
+         </div>`;
     }, 6000);
   </script>
 </body>
